@@ -10,7 +10,7 @@ using namespace std;
 
 
 
-int main(int argc, char *argv[2]){
+int main(int argc, char *argv[]){
 float thetaOffset = 0;
 
 string directory; 

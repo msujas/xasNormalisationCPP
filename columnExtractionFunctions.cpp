@@ -6,6 +6,7 @@ using namespace std;
 #include <fstream>
 #include <tuple>
 #include <filesystem>
+#include "vectorMaths.cpp"
 
 float angle_to_kev(float angle){
     float pi = 3.14159265;
@@ -37,9 +38,16 @@ bool isIn(string s, string pattern){
     }
 }
 
+vector<float> arrayByHeader(string header, vector<string> columnNames, vector<vector<float>> array2d){
+    for (int i = 0; i< columnNames.size(); i++){
+        if (columnNames[i] == header){
+            return array2d[i];
+        }
+    }
+}
 
 
-vector<string> splitString(string inputString, string delimiter){
+vector<string> splitString(string inputString, string delimiter=" "){
     int pos;
     string substring;
     vector<string> outVector;
@@ -65,26 +73,9 @@ vector<string> splitString(string inputString, string delimiter){
     return outVector;
 }
 
-float mean1dVector(vector<float> vec){
-    float sum = 0;
-    for (float item : vec){
-        sum += item;
-    }
-    sum /= vec.size();
-    return sum;
-}
 
-float max1dVector(vector<float> vec){
-    float max = vec[0];
-    for (float item : vec){
-        if (item > max){
-            max = item;
-        }
-    }
-    return max;
-}
 
-vector<float> splitStringFloat(string inputString, string delimiter){
+vector<float> splitStringFloat(string inputString, string delimiter= " "){
     int pos;
     string substring;
     vector<float> outVector;
@@ -109,17 +100,6 @@ vector<float> splitStringFloat(string inputString, string delimiter){
     return outVector;
 }
 
-vector<vector<float>> transposeVector(vector<vector<float>> inputVector){
-
-    vector<vector<float>> transposedVector;
-    for (int i=0;i < inputVector[0].size();i++){
-        transposedVector.push_back({});
-        for (int j = 0; j < inputVector.size();j++){
-            transposedVector[i].push_back(inputVector[j][i]);
-        }
-    }
-    return transposedVector;
-}
 
 void print1dStringVector(vector<string> inputVector){
     cout << "{";
@@ -316,11 +296,55 @@ void processFile (string filename, float thetaOffset){
 
         line++;
     }
-     
     
 }
 
 
-void regrid(vector<float> grid, vector<float> x, vector<float> y){
-
+void regridFiles(string directory){
+    ifstream input;
+    string monPattern = "mon_";
+    string i1Pattern = "ion_1_";
+    string fluoCounter = "xmap_roi00";
+    int maxScanLength = 0;
+    for (auto entry: filesystem::directory_iterator(directory)){
+        input.open(entry);
+        vector<string> lines;
+        string line;
+        int count = 0;
+        while (getline(input, line)){
+            lines.push_back(line);
+        }
+        input.close();
+        string scanString = lines[0];
+        string dtString = lines[1];
+        string headerString = lines[2];
+        vector<string> headerArray = splitString(headerString, " ");
+        vector<vector<float>> dataArray;
+        for (int i=3;i<lines.size(); i++){
+            dataArray.push_back(splitStringFloat(lines[i], " "));
+        }
+        vector<vector<float>> tArray = transposeVector(dataArray);
+        string monCounter;
+        string i1counter;
+        bool fluo = false;
+        for (string cName: headerArray){
+            if (isIn(cName, monPattern)){
+                monCounter = cName;
+            }
+            else if (isIn(cName,i1Pattern)){
+                i1counter = cName;
+            }
+            else if (cName == fluoCounter){
+                fluo=true;
+            }
+        }
+        vector<float> monArray = arrayByHeader(monCounter,headerArray, tArray);
+        vector<float> i1Array = arrayByHeader(i1counter, headerArray, tArray);
+        vector<float> energyArray= arrayByHeader("ZapEnergy_offset", headerArray, tArray);
+        if (energyArray.size() > maxScanLength){
+            maxScanLength = energyArray.size();
+        }
+    }
 }
+
+
