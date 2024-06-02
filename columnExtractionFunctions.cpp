@@ -368,6 +368,7 @@ void regridFiles(string directory){
         for (int i= 0; i<energyArray.size(); i++){
             muT.push_back(log(monArray[i]/i1Array[i]));
         }
+        
         mutrans.push_back(muT);
         energies.push_back(energyArray);
         monitors.push_back(monArray);
@@ -428,7 +429,6 @@ void regridFiles(string directory){
             outfile << "\n";
         }
         outfile.close();
-        cout << newfile << endl;
     }
 }
 

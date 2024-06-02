@@ -58,7 +58,7 @@ int findGridIndex(float x, vector<float> array){
         throw runtime_error("grid value above array range");
     }
     for (int i; i < array.size();i++){
-        if (i > x){
+        if (array[i] > x){
             return i-1;
         }
     }
