@@ -5,6 +5,33 @@
 #include <tuple>
 using namespace std;
 
+void print1dStringVector(vector<string> inputVector){
+    cout << "{";
+    for (int i = 0; i < inputVector.size(); i++){
+        cout << inputVector[i];
+        if (i != inputVector.size()-1){
+            cout << ',';}
+    }
+    cout << "}" << endl;
+}
+
+void print2dfloatVector(vector<vector<float>> vec){
+
+    cout << "{";
+    for (int i = 0; i < vec.size(); i++){
+        cout << "{";
+        for (int j=0; j < vec[i].size(); j++){
+        cout << vec[i][j];
+        if (j != vec[i].size()-1){
+            cout << ',';}
+            }
+        cout << "}";
+        if (i != vec.size()-1){
+            cout << ','<< endl;
+        }
+    }
+    cout << "}" << endl;
+}
 
 vector<float> range(float start, float stop, float step){
     float element = start;
@@ -15,6 +42,8 @@ vector<float> range(float start, float stop, float step){
     }
     return array;
 }
+
+
 
 float interpolate(float x, float x1, float x2, float y1, float y2){
     float n = (x1+x2)/x;
@@ -64,6 +93,44 @@ float max1dVector(vector<float> vec){
         }
     }
     return max;
+}
+
+float min1dVector(vector<float> vec){
+    float min = vec[0];
+    for (float item : vec){
+        if (item < min){
+            min = item;
+        }
+    }
+    return min;
+}
+
+int minIndex(vector<float> vec){
+    int minindex = 0;
+    for (int i=0; i<vec.size();i++){
+        if (vec[i] < vec[minindex]){
+            minindex = i;
+        }
+    }
+    return minindex;
+}
+
+int maxndex(vector<float> vec){
+    int maxindex = 0;
+    for (int i=0; i<vec.size();i++){
+        if (vec[i] > vec[maxindex]){
+            maxindex = i;
+        }
+    }
+    return maxindex;
+}
+
+vector<float> fromIndex(vector<float> vec, int index){
+    vector<float> newvec;
+    for (int i=index; i < vec.size(); i++){
+        newvec.push_back(vec[i]);
+    }
+    return newvec;
 }
 
 vector<vector<float>> transposeVector(vector<vector<float>> inputVector){

@@ -38,4 +38,11 @@ for (auto entry : filesystem::directory_iterator(directory)){
         processFile(file,thetaOffset);
     }
 }
+
+for (auto entry : filesystem::directory_iterator(directory+"/columns/")){
+    string rgdir = entry.path().string();
+    cout << rgdir << endl;
+    regridFiles(rgdir+"/");
+}
+
 }

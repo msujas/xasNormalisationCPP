@@ -44,6 +44,7 @@ vector<float> arrayByHeader(string header, vector<string> columnNames, vector<ve
             return array2d[i];
         }
     }
+    throw runtime_error("header not found");
 }
 
 
@@ -100,35 +101,6 @@ vector<float> splitStringFloat(string inputString, string delimiter= " "){
     return outVector;
 }
 
-
-void print1dStringVector(vector<string> inputVector){
-    cout << "{";
-    for (int i = 0; i < inputVector.size(); i++){
-        cout << inputVector[i];
-        if (i != inputVector.size()-1){
-            cout << ',';}
-    }
-    cout << "}" << endl;
-}
-
-void print2dfloatVector(vector<vector<float>> vec){
-
-    cout << "{";
-    for (int i = 0; i < vec.size(); i++){
-        cout << "{";
-        for (int j=0; j < vec[0].size(); j++){
-        cout << vec[i][j];
-        if (j != vec[0].size()-1){
-            cout << ',';}
-            }
-        cout << "}";
-        if (i != vec.size()-1){
-            cout << ','<< endl;
-        }
-    }
-    cout << "}" << endl;
-}
-
 int getLastScan (string file){
     ifstream input;
     vector<string> scanlines;
@@ -146,14 +118,17 @@ int getLastScan (string file){
     return lastscan;
 }
 
+string fluoCounter = "xmap_roi00";
+string monPattern = "mon_";
+string ion1Pattern = "ion_1";
+vector<string> counterNames = {"ZapEnergy","TwoTheta","mon_3","mon_4","mon_1","ion_1_2","ion_1_3","ion_1_1",fluoCounter};
+string toName = "Theta_offset";
+string zeName = "ZapEnergy_offset";
 void processFile (string filename, float thetaOffset){
 
-    string fluoCounter = "xmap_roi00";
-    string monPattern = "mon_";
-    string ion1Pattern = "ion_1";
 
-    vector<string> counterNames = {"ZapEnergy","TwoTheta","mon_3","mon_4","mon_1","ion_1_2","ion_1_3","ion_1_1",fluoCounter, 
-    "Theta_offset", "ZapEnergy_offset"};
+
+
     vector<string> counterNames_NF; //NF - no fluorescence
 
     for (int i = 0; i < counterNames.size(); i++){
@@ -268,7 +243,7 @@ void processFile (string filename, float thetaOffset){
                     }
                     filteredArray.push_back(thetaOffsetArray);
                     filteredArray.push_back(energyOffsetArray);
-                    filteredColumns += "Theta_offset ZapEnergy_offset";
+                    filteredColumns += toName + " " + zeName;
                     break;
                 }
             }
@@ -286,7 +261,10 @@ void processFile (string filename, float thetaOffset){
             for (int j=0; j< tFiltered.size();j++ ){
                 
                 for (int k=0 ; k< tFiltered[0].size(); k++){
-                    outfile << tFiltered[j][k] << " ";
+                    outfile << tFiltered[j][k];
+                    if (k!=tFiltered[0].size()-1){
+                        outfile << " ";
+                    }
                 }
                 outfile << "\n";
             }
@@ -301,13 +279,33 @@ void processFile (string filename, float thetaOffset){
 
 
 void regridFiles(string directory){
+    cout << "regridding " << directory << endl;
+    string newdir = directory+"/"+"regrid/";
+    filesystem::create_directory(newdir);
+
     ifstream input;
-    string monPattern = "mon_";
-    string i1Pattern = "ion_1_";
-    string fluoCounter = "xmap_roi00";
     int maxScanLength = 0;
+    vector<vector<float>> energies;
+    vector<vector<float>> monitors;
+    vector<vector<float>> i1s;
+    vector<vector<float>> fluos;
+    vector<bool> fluoBools;
+    vector<vector<float>> mutrans;
+    vector<string> scanLines;
+    vector<string> dtLines;
+    vector<string> filenames;
+    int maxScanIndex = 0;
+    int maxScanDifference = 30;
+    int fileno = 0;
     for (auto entry: filesystem::directory_iterator(directory)){
-        input.open(entry);
+        
+        string fname = entry.path().string();
+        if (!isIn(fname,".dat")){
+            continue;
+        }
+
+        filenames.push_back(entry.path().filename().string());
+        input.open(fname);
         vector<string> lines;
         string line;
         int count = 0;
@@ -315,9 +313,10 @@ void regridFiles(string directory){
             lines.push_back(line);
         }
         input.close();
-        string scanString = lines[0];
-        string dtString = lines[1];
+        scanLines.push_back(lines[0]);
+        dtLines.push_back(lines[1]);
         string headerString = lines[2];
+
         vector<string> headerArray = splitString(headerString, " ");
         vector<vector<float>> dataArray;
         for (int i=3;i<lines.size(); i++){
@@ -331,19 +330,105 @@ void regridFiles(string directory){
             if (isIn(cName, monPattern)){
                 monCounter = cName;
             }
-            else if (isIn(cName,i1Pattern)){
+            else if (isIn(cName,ion1Pattern)){
                 i1counter = cName;
             }
             else if (cName == fluoCounter){
                 fluo=true;
             }
         }
+        fluoBools.push_back(fluo);
         vector<float> monArray = arrayByHeader(monCounter,headerArray, tArray);
         vector<float> i1Array = arrayByHeader(i1counter, headerArray, tArray);
-        vector<float> energyArray= arrayByHeader("ZapEnergy_offset", headerArray, tArray);
+        vector<float> energyArray= arrayByHeader(zeName, headerArray, tArray);
+        vector<float> fluoArray;
+        if (fluo){
+            vector<float> fluoArray = arrayByHeader(fluoCounter,headerArray,tArray);
+        }
+        int minindex = minIndex(energyArray);
+        energyArray = fromIndex(energyArray,minindex);
+        i1Array = fromIndex(i1Array,minindex);
+        monArray = fromIndex(monArray,minindex);
+        vector<float> muF;
+        if (fluo){
+            fluoArray = fromIndex(fluoArray, minindex);
+            for (int i=0; i< fluoArray.size();i++){
+                muF.push_back(fluoArray[i]/monArray[i]);
+            }
+            fluos.push_back(muF);
+        }
+        else {
+            fluos.push_back({});
+        }
         if (energyArray.size() > maxScanLength){
             maxScanLength = energyArray.size();
+            maxScanIndex = fileno;
         }
+        vector<float> muT;
+        for (int i= 0; i<energyArray.size(); i++){
+            muT.push_back(log(monArray[i]/i1Array[i]));
+        }
+        mutrans.push_back(muT);
+        energies.push_back(energyArray);
+        monitors.push_back(monArray);
+        i1s.push_back(i1Array);
+        fileno++;
+    }
+
+    vector<float> longestScan = energies[maxScanIndex];
+    float gridStart = longestScan[0];
+    float gridStop = longestScan[longestScan.size()-1];
+    int gridSize = longestScan.size();
+    float gridStep = ((gridStop-gridStart)/(gridSize-1));
+
+    for (int i=0; i < energies.size(); i++){
+        bool fluoBool = fluoBools[i];
+        vector<float> energy = energies[i];
+        float currentGridStart = gridStart;
+        float currentGridStop = gridStop;
+        if (energy.size() < maxScanLength - maxScanDifference){
+            continue;
+        }
+        while (currentGridStop > energy[energy.size()-1]){
+            currentGridStop -= gridStep;
+        }
+        while (currentGridStart < energy[0]){
+            currentGridStart += gridStep;
+        }
+
+        vector<float> grid = range(currentGridStart,currentGridStop, gridStep);
+        vector<float> regridded = regrid(grid,energy, mutrans[i]);
+        vector<float> regriddedF;
+        vector<vector<float>> outArray;
+        if (fluoBool){
+            regriddedF = regrid(grid,energy, fluos[i]);
+             outArray = {grid,regridded, regriddedF};
+        }
+        else {
+            outArray = {grid,regridded};
+        }
+        
+        vector<vector<float>> toutArray = transposeVector(outArray);
+
+        string newfile = newdir+filenames[i];
+        ofstream outfile;
+        outfile.open(newfile);
+        outfile << scanLines[i] << "\n";
+        outfile << dtLines[i] << "\n";
+        if (!fluoBool){
+            outfile << "ZapEnergy_offset muT\n";
+        }
+        else {
+            outfile << "ZapEnergy_offset muT muF\n";
+        }
+        for (int j=0; j < toutArray.size();j++){
+            for (int k=0; k < toutArray[0].size();k++){
+                outfile << toutArray[j][k] << " ";
+            }
+            outfile << "\n";
+        }
+        outfile.close();
+        cout << newfile << endl;
     }
 }
 
