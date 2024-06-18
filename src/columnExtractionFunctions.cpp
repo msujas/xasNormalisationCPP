@@ -369,7 +369,6 @@ void regridFiles(string directory){
         for (int i= 0; i<energyArray.size(); i++){
             muT.push_back(log(monArray[i]/i1Array[i]));
         }
-        
         mutrans.push_back(muT);
         energies.push_back(energyArray);
         monitors.push_back(monArray);
@@ -384,6 +383,7 @@ void regridFiles(string directory){
     float gridStep = ((gridStop-gridStart)/(gridSize-1));
 
     for (int i=0; i < energies.size(); i++){
+        
         bool fluoBool = fluoBools[i];
         vector<float> energy = energies[i];
         float currentGridStart = gridStart;
@@ -398,21 +398,26 @@ void regridFiles(string directory){
             currentGridStart += gridStep;
         }
 
+        
         vector<float> grid = range(currentGridStart,currentGridStop, gridStep);
+
         vector<float> regridded = regrid(grid,energy, mutrans[i]);
+        
         vector<float> regriddedF;
         vector<vector<float>> outArray;
+        
         if (fluoBool){
             regriddedF = regrid(grid,energy, fluos[i]);
              outArray = {grid,regridded, regriddedF};
         }
         else {
+            
             outArray = {grid,regridded};
         }
-        
         vector<vector<float>> toutArray = transposeVector(outArray);
 
         string newfile = newdir+filenames[i];
+        
         ofstream outfile;
         outfile.open(newfile);
         outfile << scanLines[i] << "\n";

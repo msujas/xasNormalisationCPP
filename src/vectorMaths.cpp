@@ -52,12 +52,17 @@ float interpolate(float x, float x1, float x2, float y1, float y2){
 
 int findGridIndex(float x, vector<float> array){
     if (x < array[0]){
+        
         throw runtime_error("grid value below array range");
     }
+
     else if (x > array[array.size()-1]){
+        
         throw runtime_error("grid value above array range");
     }
-    for (int i; i < array.size();i++){
+    
+    for (int i = 0; i < array.size();i++){
+        
         if (array[i] > x){
             return i-1;
         }
@@ -68,7 +73,9 @@ int findGridIndex(float x, vector<float> array){
 vector<float> regrid(vector<float> grid, vector<float> x, vector<float> y){
     vector<float> yregrid;
     for (float item :  grid){
+        
         int index = findGridIndex(item, x);
+        
         float yinterp = interpolate(item,x[index],x[index+1],y[index],y[index+1]);
         yregrid.push_back(yinterp);
     }
