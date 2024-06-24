@@ -5,3 +5,12 @@ CuFoil_Cu_exafs
 .vs
 *.exe
 CppProperties.json
+libTest.cpp
+*.bat
+version.*
+*.sln
+*.vcxproj*
+*.obj
+bin
+testDir
+x64

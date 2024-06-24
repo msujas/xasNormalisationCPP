@@ -7,6 +7,7 @@
 #include <map>
 #include <boost/program_options.hpp>
 #include <filesystem>
+//#include <windows.h>
 using namespace std;
 namespace po = boost::program_options;
 
@@ -105,6 +106,7 @@ int main(int argc, char *argv[]){
         bool foundFiles = searchDir(directory, thetaOffset);
         if (foundFiles){
             cout << "looking for new files\n";}
+        _sleep(1000);
     }
 }
 
