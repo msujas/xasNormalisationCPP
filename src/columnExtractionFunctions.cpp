@@ -103,19 +103,17 @@ vector<float> splitStringFloat(string inputString, string delimiter= " "){
 
 int getLastScan (string file){
     ifstream input;
-    vector<string> scanlines;
     input.open(file);
+    int noscans = 0;
     if (input.is_open()){
         string s;
         while (getline(input,s)){
-        if (isIn(s,"#S ")){
-            scanlines.push_back(s);
+        if (isIn(s,"#S ") && isIn(s,"zapline")){
+            noscans++;
         }
         }
     }
-
-    int lastscan = stoi(splitString(scanlines.back(), " ")[1]);
-    return lastscan;
+    return noscans;
 }
 
 string fluoCounter = "xmap_roi00";
@@ -124,7 +122,7 @@ string ion1Pattern = "ion_1";
 vector<string> counterNames = {"ZapEnergy","TwoTheta","mon_3","mon_4","mon_1","ion_1_2","ion_1_3","ion_1_1",fluoCounter};
 string toName = "Theta_offset";
 string zeName = "ZapEnergy_offset";
-void processFile (string filename, float thetaOffset){
+string processFile (string filename, float thetaOffset, int startScan = 0){
 
 
 
@@ -274,6 +272,7 @@ void processFile (string filename, float thetaOffset){
 
         line++;
     }
+    return newdir;
     
 }
 

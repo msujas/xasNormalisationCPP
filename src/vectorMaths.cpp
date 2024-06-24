@@ -52,12 +52,12 @@ float interpolate(float x, float x1, float x2, float y1, float y2){
 
 int findGridIndex(float x, vector<float> array){
     if (x < array[0]){
-        
+        cout << "grid value below array range" << endl;
         throw runtime_error("grid value below array range");
     }
 
     else if (x > array[array.size()-1]){
-        
+        cout << "grid value above array range" << endl;
         throw runtime_error("grid value above array range");
     }
     
@@ -67,7 +67,8 @@ int findGridIndex(float x, vector<float> array){
             return i-1;
         }
     }
-    throw runtime_error("grid value above array range");
+    cout << "value was not found in array" << endl;
+    throw runtime_error("value was not found in array");
 }
 
 vector<float> regrid(vector<float> grid, vector<float> x, vector<float> y){
