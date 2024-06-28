@@ -1,0 +1,2 @@
+cl src/columnExtraction_thetaCorrection.cpp /EHsc /std:c++17 /Zc:__cplusplus  /I"<path\to\boost_1_85_0" ^
+/link /LIBPATH:"path\to\boost_1_85_0\stage\lib" libboost_program_options-vc142-mt-s-x64-1_85.lib 

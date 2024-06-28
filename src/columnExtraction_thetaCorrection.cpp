@@ -10,9 +10,9 @@
 //#include <windows.h>
 using namespace std;
 namespace po = boost::program_options;
-
 map<string,filesystem::file_time_type> fileTimeMap;
 map<string, int> fileScanMap;
+
 
 bool searchDir(string directory, float thetaOffset){
     string rgdir;
@@ -33,12 +33,13 @@ bool searchDir(string directory, float thetaOffset){
         if (isIn(file,".dat")){
             cout << file << endl;
             int noscans = getLastScan(file);
-            fileScanMap[file] = noscans;
+            
             if (noscans == 0){
                 continue;
             }
             cout << "total scans " << noscans <<"\n";
-            rgdir = processFile(file,thetaOffset);
+            rgdir = processFile(file,thetaOffset, fileScanMap[file]);
+            fileScanMap[file] = noscans;
             fileTimeMap[file] = mtime;
             regridFiles(rgdir);
             foundFiles = true;
@@ -57,6 +58,7 @@ bool searchDir(string directory, float thetaOffset){
 }
 
 int main(int argc, char *argv[]){
+
 
     po::options_description desc("Allowed options");
 
@@ -101,12 +103,13 @@ int main(int argc, char *argv[]){
     directory = ".";
     }
     cout << directory << endl;
-
+    bool first = true;
     while (true){
         bool foundFiles = searchDir(directory, thetaOffset);
         if (foundFiles){
             cout << "looking for new files\n";}
         _sleep(1000);
+        first=false;
     }
 }
 

@@ -23,7 +23,7 @@ float angle_to_kev(float angle){
 string numberFormat(int n, int width){
     string outstring(width,'0');
     string strDigit = to_string(n);
-    for (int i = strDigit.length(); i--; i==0){
+    for (int i = strDigit.length(); i>=0; i--){
         outstring[width+i-strDigit.length()] = strDigit[i];
     }
     return outstring;
@@ -122,10 +122,8 @@ string ion1Pattern = "ion_1";
 vector<string> counterNames = {"ZapEnergy","TwoTheta","mon_3","mon_4","mon_1","ion_1_2","ion_1_3","ion_1_1",fluoCounter};
 string toName = "Theta_offset";
 string zeName = "ZapEnergy_offset";
+
 string processFile (string filename, float thetaOffset, int startScan = 0){
-
-
-
 
     vector<string> counterNames_NF; //NF - no fluorescence
 
@@ -177,10 +175,15 @@ string processFile (string filename, float thetaOffset, int startScan = 0){
 
         s = fileLineSplit[i];
         if (isIn(s,"#S") && isIn(s,"zapline")){
+            int scanNo = stoi(splitString(s," ")[1]);
+            spectrumCount++;
+            if (scanNo < startScan){
+                continue;
+            }
             dataArray = {};
             scanLine = s;
             onscan = true;
-            spectrumCount++;
+            
             }
         else if (isIn(s,"#D") && onscan){
             dtLine = s;
