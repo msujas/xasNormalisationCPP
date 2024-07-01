@@ -3,13 +3,20 @@
 #include <cmath>
 #include <fstream>
 #include <tuple>
-#include "columnExtractionFunctions.cpp"
 #include <map>
-#include <boost/program_options.hpp>
+//#include <stringFunctions.cpp>
+#include "columnExtractionFunctions.cpp"
+#ifndef stringFunctions
+#include "stringFunctions.cpp"
+#endif
+//#include <boost/program_options.hpp>
 #include <filesystem>
-//#include <windows.h>
+#include "argParser.cpp"
+
+
 using namespace std;
-namespace po = boost::program_options;
+//namespace po = boost::program_options;
+
 map<string,filesystem::file_time_type> fileTimeMap;
 map<string, int> fileScanMap;
 
@@ -58,58 +65,23 @@ bool searchDir(string directory, float thetaOffset){
 }
 
 int main(int argc, char *argv[]){
-
-
-    po::options_description desc("Allowed options");
-
-    desc.add_options()
-        ("help", "produce help message")
-        ("thetaOffset,to", po::value<float>(), "set theta offset on monochromator (default 0)")
-        ("directory", po::value<string>(), "directory to run in")
-        ;
-
-    po::positional_options_description p;
-    p.add("directory",0);
-
-
-    po::variables_map vm;
-    float thetaOffset;
-
-    po::store(po::command_line_parser(argc,argv).
-    options(desc).positional(p).run(), vm);
-    po::notify(vm);
-    if (vm.count("help")){
-        cout << desc << endl;
-        return 0;
-    }
-
-    if (vm.count("thetaOffset")){
-        thetaOffset = vm["thetaOffset"].as<float>();
-    }
-    else if (vm.count("to")){
-        thetaOffset = vm["to"].as<float>();
-    }
-    else {
-        thetaOffset = 0;
-    }
-
+    
+    ArgParser ap;
+    ap.addKW("thetaOffset","0","to");
+    ap.addPositional("directory",".");
+    ap.readArguments(argc,argv);
+    float thetaOffset = ap.getArg<float>("thetaOffset");
+    
     cout << "thetaOffset=" << thetaOffset << endl;
 
-    string directory;
-    if (vm.count("directory")){
-    directory = vm["directory"].as<string>();
-    }
-    else {
-    directory = ".";
-    }
+    string directory = ap.getArg<string>("directory");
+    
     cout << directory << endl;
-    bool first = true;
     while (true){
         bool foundFiles = searchDir(directory, thetaOffset);
         if (foundFiles){
             cout << "looking for new files\n";}
         _sleep(1000);
-        first=false;
     }
 }
 

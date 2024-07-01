@@ -6,7 +6,9 @@ CuFoil_Cu_exafs
 *.exe
 CppProperties.json
 libTest.cpp
-*.bat
+ceBuild.bat
+ceBuildCL.bat
+ceBuildClang.bat
 version.*
 *.sln
 *.vcxproj*
@@ -14,3 +16,5 @@ version.*
 bin
 testDir
 x64
+libTestBuild.bat
+src/argParser.cpp

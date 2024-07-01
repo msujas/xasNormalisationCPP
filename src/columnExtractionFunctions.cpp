@@ -1,11 +1,13 @@
 #include <iostream>
 #include <vector>
-#include <string>
 #include <cmath>
 #include <fstream>
 #include <tuple>
 #include <filesystem>
 #include "vectorMaths.cpp"
+#ifndef stringFunctions
+#include <stringFunctions.cpp>
+#endif
 using namespace std;
 
 float angle_to_kev(float angle){
@@ -29,15 +31,6 @@ string numberFormat(int n, int width){
     return outstring;
 }
 
-bool isIn(string s, string pattern){
-    if (s.find(pattern)!= -1){
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 vector<float> arrayByHeader(string header, vector<string> columnNames, vector<vector<float>> array2d){
     for (int i = 0; i< columnNames.size(); i++){
         if (columnNames[i] == header){
@@ -46,35 +39,6 @@ vector<float> arrayByHeader(string header, vector<string> columnNames, vector<ve
     }
     throw runtime_error("header not found");
 }
-
-
-vector<string> splitString(string inputString, string delimiter=" "){
-    int pos;
-    string substring;
-    vector<string> outVector;
-    string  tempString = inputString;
-    if (delimiter ==" "){
-        while (isIn(tempString,"  ")){ // check if 2 consecutive spaces in string, replace with 1
-            tempString = tempString.replace(tempString.find("  "),2," ");
-
-        }
-        if (tempString.find(" ") == 0){
-            tempString = tempString.replace(0,1,"");
-        }
-    }
-    while (true){
-        pos = tempString.find(delimiter);
-        substring = tempString.substr(0,pos);
-        outVector.push_back(substring);
-        if (tempString.find(delimiter) == -1){
-            break;
-        }
-        tempString.erase(0,pos+delimiter.length());    
-    }
-    return outVector;
-}
-
-
 
 vector<float> splitStringFloat(string inputString, string delimiter= " "){
     int pos;
